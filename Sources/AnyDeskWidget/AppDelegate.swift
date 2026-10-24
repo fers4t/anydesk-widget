@@ -7,6 +7,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let popover = NSPopover()
     private let shortcutModel = ShortcutSettingsModel()
     private let connectionModel = ConnectionModel()
+    private let updateModel = UpdateModel()
     private let clipboardMonitor = ClipboardMonitor()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -23,8 +24,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         popover.animates = true
         popover.contentSize = NSSize(width: 320, height: 235)
         popover.contentViewController = NSHostingController(
-            rootView: RootView(shortcutModel: shortcutModel, connectionModel: connectionModel)
+            rootView: RootView(
+                shortcutModel: shortcutModel,
+                connectionModel: connectionModel,
+                updateModel: updateModel
+            )
         )
+
+        updateModel.onStateChange = { [weak self] state in
+            guard let button = self?.statusItem.button else { return }
+            switch state {
+            case let .downloading(version):
+                button.toolTip = String(format: Copy.updateDownloading, version)
+            case let .ready(update):
+                button.image = NSImage(systemSymbolName: "arrow.down.circle.fill", accessibilityDescription: Copy.updateReady)
+                button.toolTip = String(format: Copy.updateReadyVersion, update.version)
+            default:
+                button.toolTip = Copy.menuTitle
+            }
+        }
+        updateModel.onUpdateReady = { [weak self] in
+            self?.popover.contentSize = NSSize(width: 320, height: 305)
+            self?.showPopover()
+        }
+        updateModel.start()
 
         clipboardMonitor.isEnabled = { [weak self] in
             self?.shortcutModel.autoOpenFromClipboard ?? false

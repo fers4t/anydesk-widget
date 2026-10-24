@@ -6,22 +6,27 @@ private enum Page { case connect, settings }
 struct RootView: View {
     @ObservedObject var shortcutModel: ShortcutSettingsModel
     @ObservedObject var connectionModel: ConnectionModel
+    @ObservedObject var updateModel: UpdateModel
     @State private var page: Page = .connect
 
     var body: some View {
         Group {
             switch page {
-            case .connect: ConnectionView(model: connectionModel) { page = .settings }
+            case .connect: ConnectionView(model: connectionModel, updateModel: updateModel) { page = .settings }
             case .settings: SettingsView(model: shortcutModel) { page = .connect }
             }
         }
         .frame(width: 320)
         .onChange(of: connectionModel.focusRequest) { _ in page = .connect }
+        .onChange(of: updateModel.preparedUpdate?.version) { _ in
+            if updateModel.preparedUpdate != nil { page = .connect }
+        }
     }
 }
 
 private struct ConnectionView: View {
     @ObservedObject var model: ConnectionModel
+    @ObservedObject var updateModel: UpdateModel
     let openSettings: () -> Void
     @State private var message: String?
     @FocusState private var isAddressFocused: Bool
@@ -41,6 +46,30 @@ private struct ConnectionView: View {
                 .textFieldStyle(.roundedBorder)
                 .focused($isAddressFocused)
                 .onSubmit(connect)
+
+            if let update = updateModel.preparedUpdate {
+                VStack(alignment: .leading, spacing: 7) {
+                    Label(String(format: Copy.updateReadyVersion, update.version), systemImage: "arrow.down.circle.fill")
+                        .font(.subheadline.weight(.semibold))
+                    Text(Copy.updateReadyDetail)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Button(Copy.updateAndRestart) { updateModel.installAndRestart() }
+                        .buttonStyle(.borderedProminent)
+                }
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.accentColor.opacity(0.10), in: RoundedRectangle(cornerRadius: 8))
+            } else if case .installing = updateModel.state {
+                HStack(spacing: 8) {
+                    ProgressView().controlSize(.small)
+                    Text(Copy.updateInstalling).font(.caption)
+                }
+            } else if case let .failed(error) = updateModel.state {
+                Text(String(format: Copy.updateFailed, error))
+                    .font(.caption).foregroundStyle(.red)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
 
             if let message {
                 Text(message).font(.caption).foregroundStyle(.red)

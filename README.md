@@ -27,6 +27,7 @@ The application is intentionally narrow in scope: it does not replace AnyDesk, m
 - Normalize spaces in numeric AnyDesk IDs before connecting
 - Launch AnyDesk automatically through its registered URL handler
 - Follow the preferred macOS language: English, Turkish, French, or Italian
+- Check GitHub Releases automatically, verify and download updates in the background, then install them on demand
 - Persist shortcut preferences locally between launches
 - Detect unavailable shortcut combinations without discarding the active shortcut
 - Run as a menu bar utility without a Dock presence
@@ -50,6 +51,10 @@ AnyDesk Widget is implemented with SwiftUI, AppKit, and Carbon. It has no third-
 4. Launch it once from Finder.
 
 Release artifacts are ad-hoc signed but not notarized with an Apple Developer certificate. Depending on your Gatekeeper settings, macOS may require explicit approval under **System Settings → Privacy & Security** before the first launch.
+
+Starting with version 1.3.0, updates are delivered from this repository's GitHub Releases. The widget checks periodically without interrupting your work. When a newer build is ready, the menu bar icon changes and the popover presents an **Update and Restart** action.
+
+Before installation, the updater verifies the downloaded archive against the SHA-256 digest published by GitHub, confirms the application bundle identifier and version, and validates the bundle's code signature. If any check fails, the installed application is left untouched.
 
 ## Usage
 
@@ -83,6 +88,7 @@ The build script compiles an optimized Swift executable, assembles the `.app` bu
 | `ShortcutSettingsModel` | Shortcut persistence, validation, and registration state |
 | `GlobalHotKeyManager` | System-wide shortcut registration through Carbon |
 | `Localization` | Runtime language selection and interface copy |
+| `UpdateModel` | GitHub release discovery, background download, verification, installation, and relaunch |
 
 Connections are initiated with AnyDesk's official `anydesk:<id-or-alias>` URL format. macOS resolves the scheme to the installed AnyDesk client; authentication, session approval, and remote-access permissions remain entirely under AnyDesk's control. See the [AnyDesk URL handler documentation](https://support.anydesk.com/url-handler) for protocol details.
 
@@ -96,6 +102,7 @@ AnyDesk Widget:
 - does not require Accessibility or Input Monitoring permission for its global shortcut;
 - inspects changed plain-text clipboard values only while clipboard detection is enabled, without retaining their contents;
 - stores only the selected shortcut and clipboard-detection preference in the application's local `UserDefaults` domain.
+- contacts GitHub's public Releases API periodically to check for application updates; no account token or personal identifier is sent.
 
 AnyDesk may require separate macOS permissions for remote-control functionality. Those permissions are managed by the AnyDesk client, not by this utility.
 

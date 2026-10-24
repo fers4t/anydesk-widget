@@ -27,6 +27,21 @@ enum Copy {
     static var emptyAddress: String { value("Bir AnyDesk ID veya alias girin.", "Enter an AnyDesk ID or alias.", "Saisissez un ID AnyDesk ou un alias.", "Inserisci un ID AnyDesk o un alias.") }
     static var invalidAddress: String { value("Geçerli bir AnyDesk ID veya alias girin.", "Enter a valid AnyDesk ID or alias.", "Saisissez un ID AnyDesk ou un alias valide.", "Inserisci un ID AnyDesk o un alias valido.") }
     static var anyDeskMissing: String { value("AnyDesk bulunamadı. Önce AnyDesk'i yükleyin.", "AnyDesk was not found. Install AnyDesk first.", "AnyDesk est introuvable. Installez d'abord AnyDesk.", "AnyDesk non è stato trovato. Installa prima AnyDesk.") }
+    static var updateReady: String { value("Güncelleme hazır", "Update ready", "Mise à jour prête", "Aggiornamento pronto") }
+    static var updateReadyVersion: String { value("Sürüm %@ hazır", "Version %@ is ready", "La version %@ est prête", "La versione %@ è pronta") }
+    static var updateReadyDetail: String { value("Güncelleme doğrulandı ve arka planda indirildi.", "The update was verified and downloaded in the background.", "La mise à jour a été vérifiée et téléchargée en arrière-plan.", "L’aggiornamento è stato verificato e scaricato in background.") }
+    static var updateAndRestart: String { value("Güncelle ve yeniden başlat", "Update and Restart", "Mettre à jour et redémarrer", "Aggiorna e riavvia") }
+    static var updateInstalling: String { value("Güncelleme kuruluyor…", "Installing update…", "Installation de la mise à jour…", "Installazione dell’aggiornamento…") }
+    static var updateDownloading: String { value("Sürüm %@ arka planda indiriliyor", "Downloading version %@ in the background", "Téléchargement de la version %@ en arrière-plan", "Download della versione %@ in background") }
+    static var updateFailed: String { value("Güncelleme başarısız: %@", "Update failed: %@", "Échec de la mise à jour : %@", "Aggiornamento non riuscito: %@") }
+    static var updateInvalidResponse: String { value("GitHub geçerli bir yanıt vermedi.", "GitHub returned an invalid response.", "GitHub a renvoyé une réponse non valide.", "GitHub ha restituito una risposta non valida.") }
+    static var updateMissingAsset: String { value("Release içinde uygun uygulama paketi yok.", "The release does not contain a compatible app package.", "La version ne contient aucun paquet compatible.", "La release non contiene un pacchetto compatibile.") }
+    static var updateMissingDigest: String { value("Release SHA-256 doğrulama özeti içermiyor.", "The release is missing its SHA-256 digest.", "La version ne contient pas de somme SHA-256.", "Nella release manca il digest SHA-256.") }
+    static var updateInvalidDigest: String { value("İndirilen dosyanın SHA-256 özeti eşleşmiyor.", "The downloaded file failed SHA-256 verification.", "La vérification SHA-256 du fichier a échoué.", "La verifica SHA-256 del file non è riuscita.") }
+    static var updateInvalidArchive: String { value("Güncelleme arşivi açılamadı.", "The update archive could not be extracted.", "L’archive de mise à jour n’a pas pu être extraite.", "Impossibile estrarre l’archivio di aggiornamento.") }
+    static var updateInvalidApplication: String { value("Güncelleme paketi bu uygulamayla eşleşmiyor.", "The update package does not match this application.", "Le paquet ne correspond pas à cette application.", "Il pacchetto non corrisponde a questa applicazione.") }
+    static var updateInvalidSignature: String { value("Güncellemenin kod imzası doğrulanamadı.", "The update's code signature could not be verified.", "La signature du code n’a pas pu être vérifiée.", "Impossibile verificare la firma del codice.") }
+    static var updateCannotInstall: String { value("Uygulama değiştirilemedi. Applications klasöründeki yazma iznini kontrol edin.", "The app could not be replaced. Check write access in the Applications folder.", "L’app n’a pas pu être remplacée. Vérifiez l’accès en écriture au dossier Applications.", "Impossibile sostituire l’app. Controlla l’accesso in scrittura alla cartella Applicazioni.") }
 
     private static func value(_ tr: String, _ en: String, _ fr: String, _ it: String) -> String {
         switch language { case "tr": tr; case "fr": fr; case "it": it; default: en }
