@@ -268,7 +268,14 @@ private enum GitHubUpdateService {
         } else if fileManager.isWritableFile(atPath: currentURL.path) {
             // Finder commonly gives the user ownership of the app bundle, while
             // /Applications itself remains protected. Updating in place needs no prompt.
-            try run("/usr/bin/ditto", arguments: [update.appURL.path, currentURL.path], failure: .cannotReplaceApplication)
+            // A directory can report itself writable even when files inside the
+            // bundle are owned by another user (for example after an admin install).
+            // If the in-place copy fails, retry through the authenticated path.
+            do {
+                try run("/usr/bin/ditto", arguments: [update.appURL.path, currentURL.path], failure: .cannotReplaceApplication)
+            } catch {
+                try installWithAdministratorPrivileges(source: update.appURL, destination: currentURL)
+            }
         } else {
             try installWithAdministratorPrivileges(source: update.appURL, destination: currentURL)
         }
