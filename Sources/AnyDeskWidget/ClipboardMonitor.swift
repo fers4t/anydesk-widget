@@ -62,7 +62,7 @@ final class ClipboardMonitor: NSObject {
             return
         }
 
-        if let image = NSImage(pasteboard: pasteboard) {
+        if let image = StatusItemDropTarget.image(from: pasteboard) {
             Task { [weak self] in
                 guard let address = try? await ImageIDRecognizer.numericID(in: image) else { return }
                 self?.onAddressDetected?(address)
