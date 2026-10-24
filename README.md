@@ -12,6 +12,7 @@ Click the menu bar icon, enter an AnyDesk ID or alias, and press Return. The wid
 - Launches AnyDesk when it is not already running
 - Shows a clear message when AnyDesk is not installed
 - Automatically follows the system language (English, Turkish, French, or Italian)
+- Configurable system-wide keyboard shortcut to show or hide the widget
 - Native SwiftUI interface with no third-party dependencies
 
 ## Requirements
@@ -31,6 +32,8 @@ open "dist/AnyDesk Bağlan.app"
 The generated application is ad-hoc signed and placed in `dist/`. Move it to `/Applications` for everyday use.
 
 To launch the widget automatically, add it under **System Settings → General → Login Items**.
+
+The default global shortcut is `⌥⌘A`. Open the gear menu to record your own shortcut; the selection is saved automatically.
 
 ## How it works
 
