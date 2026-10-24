@@ -33,6 +33,7 @@ The application is intentionally narrow in scope: it does not replace AnyDesk, m
 - Extract an AnyDesk ID from a dropped or copied image using on-device Vision OCR
 - Accept images from the macOS Services menu in applications that expose compatible content
 - Open the popover automatically when an image is dragged over the menu bar icon
+- Paste a copied image into the open widget with `⌘V` to run OCR immediately
 - Persist shortcut preferences locally between launches
 - Detect unavailable shortcut combinations without discarding the active shortcut
 - Run as a menu bar utility without a Dock presence
@@ -73,7 +74,7 @@ Use the gear button to record a different system-wide shortcut. The shortcut mus
 
 Clipboard detection is enabled by default and can be disabled from the same settings screen. Detection is intentionally strict: only clipboard text consisting entirely of a supported 9–10 digit AnyDesk ID format triggers the widget.
 
-Images can be dragged onto the menu bar icon or the connection popover, or copied to the clipboard. Hovering over the menu bar icon during a drag opens the popover automatically. OCR runs locally with Apple's Vision framework; image contents are never uploaded. In applications that support macOS Services, use **Services → Open AnyDesk ID in AnyDesk Widget** from the contextual menu.
+Images can be dragged onto the menu bar icon or the connection popover, copied for automatic detection, or pasted into the open widget with `⌘V`. Hovering over the menu bar icon during a drag opens the popover automatically. OCR runs locally with Apple's Vision framework; image contents are never uploaded. In applications that support macOS Services, use **Services → Open AnyDesk ID in AnyDesk Widget** from the contextual menu.
 
 The widget registers itself as a macOS Login Item on first launch. You can disable automatic startup or check for updates manually from the Settings screen.
 

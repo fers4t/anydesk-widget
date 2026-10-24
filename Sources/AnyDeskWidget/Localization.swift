@@ -48,7 +48,7 @@ enum Copy {
     static var updates: String { value("Güncellemeler", "Updates", "Mises à jour", "Aggiornamenti") }
     static var checkForUpdates: String { value("Güncellemeleri Denetle", "Check for Updates", "Rechercher", "Verifica aggiornamenti") }
     static var updateUpToDate: String { value("AnyDesk Widget güncel.", "AnyDesk Widget is up to date.", "AnyDesk Widget est à jour.", "AnyDesk Widget è aggiornato.") }
-    static var dropImageHint: String { value("AnyDesk kodu içeren görseli buraya bırakın", "Drop an image containing an AnyDesk ID", "Déposez une image contenant un ID AnyDesk", "Trascina qui un’immagine con un ID AnyDesk") }
+    static var dropImageHint: String { value("Görseli bırakın veya ⌘V ile yapıştırın", "Drop an image or paste it with ⌘V", "Déposez une image ou collez-la avec ⌘V", "Trascina un’immagine o incollala con ⌘V") }
     static var dropImageNow: String { value("Görseli bırakın", "Drop the image", "Déposez l’image", "Rilascia l’immagine") }
     static var menuDropHint: String { value("Görseli sürükleyince otomatik açılır", "Opens automatically while dragging an image", "S’ouvre automatiquement lors du glissement d’une image", "Si apre automaticamente mentre trascini un’immagine") }
     static var imageReading: String { value("Görseldeki kod okunuyor…", "Reading the ID from the image…", "Lecture de l’ID dans l’image…", "Lettura dell’ID dall’immagine…") }

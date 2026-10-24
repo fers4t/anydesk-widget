@@ -11,6 +11,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let launchAtLoginModel = LaunchAtLoginModel()
     private let clipboardMonitor = ClipboardMonitor()
     private var statusDropTarget: StatusItemDropTarget?
+    private var pasteMonitor: Any?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         guard let button = statusItem.button else { return }
@@ -73,6 +74,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         clipboardMonitor.start()
         NSApplication.shared.servicesProvider = self
         NSUpdateDynamicServices()
+
+        pasteMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .command,
+                  event.charactersIgnoringModifiers?.lowercased() == "v",
+                  let image = StatusItemDropTarget.image(from: .general) else { return event }
+            self?.connectionModel.showNotice(Copy.imageReading)
+            self?.recognize(image: image)
+            return nil
+        }
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        if let pasteMonitor { NSEvent.removeMonitor(pasteMonitor) }
     }
 
     @objc private func togglePopover() {
