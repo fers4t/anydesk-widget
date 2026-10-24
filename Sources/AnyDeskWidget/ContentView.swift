@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import UniformTypeIdentifiers
 
 private enum Page { case connect, settings }
 
@@ -35,6 +36,7 @@ private struct ConnectionView: View {
     @ObservedObject var updateModel: UpdateModel
     let openSettings: () -> Void
     @State private var message: String?
+    @State private var isDropTarget = false
     @FocusState private var isAddressFocused: Bool
 
     var body: some View {
@@ -52,6 +54,19 @@ private struct ConnectionView: View {
                 .textFieldStyle(.roundedBorder)
                 .focused($isAddressFocused)
                 .onSubmit(connect)
+
+            HStack(spacing: 7) {
+                Image(systemName: isDropTarget ? "photo.badge.checkmark" : "photo.on.rectangle")
+                Text(isDropTarget ? Copy.dropImageNow : Copy.dropImageHint)
+            }
+            .font(.caption)
+            .foregroundStyle(isDropTarget ? Color.accentColor : Color.secondary)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 7)
+            .background(
+                RoundedRectangle(cornerRadius: 7)
+                    .strokeBorder(isDropTarget ? Color.accentColor : Color.secondary.opacity(0.35), style: StrokeStyle(lineWidth: 1, dash: [4]))
+            )
 
             if let update = updateModel.preparedUpdate {
                 VStack(alignment: .leading, spacing: 7) {
@@ -98,9 +113,10 @@ private struct ConnectionView: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { isAddressFocused = true }
         }
         .onChange(of: model.focusRequest) { _ in
-            message = nil
+            message = model.notice
             isAddressFocused = true
         }
+        .onDrop(of: [UTType.image.identifier, UTType.fileURL.identifier], isTargeted: $isDropTarget, perform: handleDrop)
     }
 
     private func connect() {
@@ -123,6 +139,46 @@ private struct ConnectionView: View {
             return
         }
         NSWorkspace.shared.open(url)
+    }
+
+    private func handleDrop(_ providers: [NSItemProvider]) -> Bool {
+        guard let provider = providers.first else { return false }
+        let imageTypes = provider.registeredTypeIdentifiers.filter {
+            UTType($0)?.conforms(to: .image) == true
+        }
+        if let type = imageTypes.first {
+            provider.loadDataRepresentation(forTypeIdentifier: type) { data, _ in
+                guard let data, let image = NSImage(data: data) else { return }
+                Task { @MainActor in recognize(image) }
+            }
+            return true
+        }
+        if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
+            provider.loadDataRepresentation(forTypeIdentifier: UTType.fileURL.identifier) { data, _ in
+                guard let data,
+                      let url = URL(dataRepresentation: data, relativeTo: nil),
+                      let image = NSImage(contentsOf: url) else { return }
+                Task { @MainActor in recognize(image) }
+            }
+            return true
+        }
+        return false
+    }
+
+    private func recognize(_ image: NSImage) {
+        Task { @MainActor in
+            message = Copy.imageReading
+            do {
+                guard let address = try await ImageIDRecognizer.numericID(in: image) else {
+                    message = Copy.imageIDNotFound
+                    return
+                }
+                model.prepare(address: address)
+                message = nil
+            } catch {
+                message = Copy.imageUnreadable
+            }
+        }
     }
 }
 

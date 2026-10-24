@@ -30,6 +30,8 @@ The application is intentionally narrow in scope: it does not replace AnyDesk, m
 - Check GitHub Releases automatically, verify and download updates in the background, then install them on demand
 - Start automatically when the user logs in, with an opt-out in Settings
 - Check for updates manually from Settings
+- Extract an AnyDesk ID from a dropped or copied image using on-device Vision OCR
+- Accept images from the macOS Services menu in applications that expose compatible content
 - Persist shortcut preferences locally between launches
 - Detect unavailable shortcut combinations without discarding the active shortcut
 - Run as a menu bar utility without a Dock presence
@@ -68,6 +70,8 @@ Use the gear button to record a different system-wide shortcut. The shortcut mus
 
 Clipboard detection is enabled by default and can be disabled from the same settings screen. Detection is intentionally strict: only clipboard text consisting entirely of a supported 9–10 digit AnyDesk ID format triggers the widget.
 
+Images can be dragged onto the connection popover or copied to the clipboard. OCR runs locally with Apple's Vision framework; image contents are never uploaded. In applications that support macOS Services, use **Services → Open AnyDesk ID in AnyDesk Widget** from the contextual menu.
+
 The widget registers itself as a macOS Login Item on first launch. You can disable automatic startup or check for updates manually from the Settings screen.
 
 ## Build from source
@@ -102,7 +106,7 @@ AnyDesk Widget:
 - does not store submitted AnyDesk IDs or aliases;
 - does not handle unattended-access passwords;
 - does not require Accessibility or Input Monitoring permission for its global shortcut;
-- inspects changed plain-text clipboard values only while clipboard detection is enabled, without retaining their contents;
+- inspects changed text or image clipboard values only while clipboard detection is enabled, without retaining their contents or uploading images;
 - stores only the selected shortcut and clipboard-detection preference in the application's local `UserDefaults` domain.
 - contacts GitHub's public Releases API periodically to check for application updates; no account token or personal identifier is sent.
 

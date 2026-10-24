@@ -48,6 +48,11 @@ enum Copy {
     static var updates: String { value("Güncellemeler", "Updates", "Mises à jour", "Aggiornamenti") }
     static var checkForUpdates: String { value("Güncellemeleri Denetle", "Check for Updates", "Rechercher", "Verifica aggiornamenti") }
     static var updateUpToDate: String { value("AnyDesk Widget güncel.", "AnyDesk Widget is up to date.", "AnyDesk Widget est à jour.", "AnyDesk Widget è aggiornato.") }
+    static var dropImageHint: String { value("AnyDesk kodu içeren görseli buraya bırakın", "Drop an image containing an AnyDesk ID", "Déposez une image contenant un ID AnyDesk", "Trascina qui un’immagine con un ID AnyDesk") }
+    static var dropImageNow: String { value("Görseli bırakın", "Drop the image", "Déposez l’image", "Rilascia l’immagine") }
+    static var imageReading: String { value("Görseldeki kod okunuyor…", "Reading the ID from the image…", "Lecture de l’ID dans l’image…", "Lettura dell’ID dall’immagine…") }
+    static var imageIDNotFound: String { value("Görselde 9–10 haneli bir AnyDesk kodu bulunamadı.", "No 9–10 digit AnyDesk ID was found in the image.", "Aucun ID AnyDesk de 9 à 10 chiffres n’a été trouvé dans l’image.", "Nell’immagine non è stato trovato un ID AnyDesk di 9–10 cifre.") }
+    static var imageUnreadable: String { value("Görsel okunamadı.", "The image could not be read.", "L’image n’a pas pu être lue.", "Impossibile leggere l’immagine.") }
 
     private static func value(_ tr: String, _ en: String, _ fr: String, _ it: String) -> String {
         switch language { case "tr": tr; case "fr": fr; case "it": it; default: en }

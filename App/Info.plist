@@ -15,9 +15,28 @@
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.4.0</string>
+    <string>1.5.0</string>
     <key>CFBundleVersion</key>
-    <string>5</string>
+    <string>6</string>
+    <key>NSServices</key>
+    <array>
+        <dict>
+            <key>NSMenuItem</key>
+            <dict>
+                <key>default</key>
+                <string>Open AnyDesk ID in AnyDesk Widget</string>
+            </dict>
+            <key>NSMessage</key>
+            <string>readAnyDeskID</string>
+            <key>NSPortName</key>
+            <string>AnyDeskWidget</string>
+            <key>NSSendTypes</key>
+            <array>
+                <string>public.image</string>
+                <string>public.file-url</string>
+            </array>
+        </dict>
+    </array>
     <key>LSMinimumSystemVersion</key>
     <string>13.0</string>
     <key>LSUIElement</key>

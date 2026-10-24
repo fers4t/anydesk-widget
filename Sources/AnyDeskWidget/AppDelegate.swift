@@ -61,6 +61,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self.showPopover()
         }
         clipboardMonitor.start()
+        NSApplication.shared.servicesProvider = self
+        NSUpdateDynamicServices()
     }
 
     @objc private func togglePopover() {
@@ -76,6 +78,31 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApplication.shared.activate(ignoringOtherApps: true)
         if !popover.isShown {
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        }
+    }
+
+    @objc func readAnyDeskID(
+        _ pasteboard: NSPasteboard,
+        userData: String,
+        error errorPointer: AutoreleasingUnsafeMutablePointer<NSString?>
+    ) {
+        guard let image = NSImage(pasteboard: pasteboard) else {
+            errorPointer.pointee = Copy.imageUnreadable as NSString
+            return
+        }
+        Task {
+            do {
+                guard let address = try await ImageIDRecognizer.numericID(in: image) else {
+                    connectionModel.showNotice(Copy.imageIDNotFound)
+                    showPopover()
+                    return
+                }
+                connectionModel.prepare(address: address)
+                showPopover()
+            } catch {
+                connectionModel.showNotice(Copy.imageUnreadable)
+                showPopover()
+            }
         }
     }
 }

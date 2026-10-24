@@ -16,9 +16,16 @@ enum AnyDeskAddressDetector {
 final class ConnectionModel: ObservableObject {
     @Published var address = ""
     @Published private(set) var focusRequest = 0
+    @Published private(set) var notice: String?
 
     func prepare(address: String) {
         self.address = address
+        notice = nil
+        focusRequest += 1
+    }
+
+    func showNotice(_ message: String) {
+        notice = message
         focusRequest += 1
     }
 }
@@ -49,8 +56,17 @@ final class ClipboardMonitor: NSObject {
         lastChangeCount = pasteboard.changeCount
         guard isEnabled?() ?? true else { return }
 
-        guard let value = pasteboard.string(forType: .string),
-              let address = AnyDeskAddressDetector.numericID(from: value) else { return }
-        onAddressDetected?(address)
+        if let value = pasteboard.string(forType: .string),
+           let address = AnyDeskAddressDetector.numericID(from: value) {
+            onAddressDetected?(address)
+            return
+        }
+
+        if let image = NSImage(pasteboard: pasteboard) {
+            Task { [weak self] in
+                guard let address = try? await ImageIDRecognizer.numericID(in: image) else { return }
+                self?.onAddressDetected?(address)
+            }
+        }
     }
 }
