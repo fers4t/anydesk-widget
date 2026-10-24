@@ -10,13 +10,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let updateModel = UpdateModel()
     private let launchAtLoginModel = LaunchAtLoginModel()
     private let clipboardMonitor = ClipboardMonitor()
+    private var statusDropTarget: StatusItemDropTarget?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         guard let button = statusItem.button else { return }
         button.image = NSImage(systemSymbolName: "rectangle.connected.to.line.below", accessibilityDescription: Copy.menuTitle)
         button.toolTip = Copy.menuTitle
-        button.target = self
-        button.action = #selector(togglePopover)
+        let dropTarget = StatusItemDropTarget(frame: button.bounds)
+        dropTarget.autoresizingMask = [.width, .height]
+        dropTarget.toolTip = Copy.menuTitle
+        dropTarget.onClick = { [weak self] in self?.togglePopover() }
+        dropTarget.onDragEntered = { [weak self] in self?.showPopover(activate: false) }
+        dropTarget.onImageDropped = { [weak self] image in self?.recognize(image: image) }
+        button.addSubview(dropTarget)
+        statusDropTarget = dropTarget
 
         shortcutModel.onTrigger = { [weak self] in self?.togglePopover() }
         shortcutModel.start()
@@ -38,11 +45,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             switch state {
             case let .downloading(version):
                 button.toolTip = String(format: Copy.updateDownloading, version)
+                self?.statusDropTarget?.toolTip = button.toolTip
             case let .ready(update):
                 button.image = NSImage(systemSymbolName: "arrow.down.circle.fill", accessibilityDescription: Copy.updateReady)
                 button.toolTip = String(format: Copy.updateReadyVersion, update.version)
+                self?.statusDropTarget?.toolTip = button.toolTip
             default:
                 button.toolTip = Copy.menuTitle
+                self?.statusDropTarget?.toolTip = button.toolTip
             }
         }
         updateModel.onUpdateReady = { [weak self] in
@@ -73,9 +83,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    private func showPopover() {
+    private func showPopover(activate: Bool = true) {
         guard let button = statusItem.button else { return }
-        NSApplication.shared.activate(ignoringOtherApps: true)
+        if activate { NSApplication.shared.activate(ignoringOtherApps: true) }
         if !popover.isShown {
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
         }
@@ -86,10 +96,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         userData: String,
         error errorPointer: AutoreleasingUnsafeMutablePointer<NSString?>
     ) {
-        guard let image = NSImage(pasteboard: pasteboard) else {
+        guard let image = StatusItemDropTarget.image(from: pasteboard) else {
             errorPointer.pointee = Copy.imageUnreadable as NSString
             return
         }
+        recognize(image: image)
+    }
+
+    private func recognize(image: NSImage) {
         Task {
             do {
                 guard let address = try await ImageIDRecognizer.numericID(in: image) else {
