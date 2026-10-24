@@ -234,6 +234,12 @@ private struct SettingsView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(Copy.updates).font(.subheadline.weight(.medium))
+                    Text(String(
+                        format: Copy.currentVersion,
+                        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
+                    ))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                     if let status = updateModel.manualStatus {
                         Text(status).font(.caption).foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)

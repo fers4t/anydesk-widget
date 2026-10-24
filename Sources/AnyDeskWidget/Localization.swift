@@ -46,6 +46,7 @@ enum Copy {
     static var launchAtLoginNeedsApproval: String { value("Sistem Ayarları > Genel > Giriş Öğeleri bölümünden izin verin.", "Allow it in System Settings > General > Login Items.", "Autorisez-le dans Réglages Système > Général > Ouverture.", "Consentilo in Impostazioni di Sistema > Generali > Elementi login.") }
     static var launchAtLoginFailed: String { value("Otomatik başlatma ayarlanamadı: %@", "Launch at login could not be configured: %@", "Le lancement à la connexion n’a pas pu être configuré : %@", "Impossibile configurare l’avvio al login: %@") }
     static var updates: String { value("Güncellemeler", "Updates", "Mises à jour", "Aggiornamenti") }
+    static var currentVersion: String { value("Sürüm %@", "Version %@", "Version %@", "Versione %@") }
     static var checkForUpdates: String { value("Güncellemeleri Denetle", "Check for Updates", "Rechercher", "Verifica aggiornamenti") }
     static var updateUpToDate: String { value("AnyDesk Widget güncel.", "AnyDesk Widget is up to date.", "AnyDesk Widget est à jour.", "AnyDesk Widget è aggiornato.") }
     static var dropImageHint: String { value("Görseli bırakın veya ⌘V ile yapıştırın", "Drop an image or paste it with ⌘V", "Déposez une image ou collez-la avec ⌘V", "Trascina un’immagine o incollala con ⌘V") }
