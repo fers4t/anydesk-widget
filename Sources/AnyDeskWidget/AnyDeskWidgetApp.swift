@@ -4,7 +4,7 @@ import SwiftUI
 @main
 struct AnyDeskWidgetApp: App {
     var body: some Scene {
-        MenuBarExtra("AnyDesk Bağlan", systemImage: "rectangle.connected.to.line.below") {
+        MenuBarExtra(Copy.menuTitle, systemImage: "rectangle.connected.to.line.below") {
             ConnectionView()
         }
         .menuBarExtraStyle(.window)
@@ -22,13 +22,13 @@ private struct ConnectionView: View {
                 Image(systemName: "display")
                     .foregroundStyle(.secondary)
 
-                Text("AnyDesk'e Bağlan")
+                Text(Copy.heading)
                     .font(.headline)
 
                 Spacer()
             }
 
-            TextField("AnyDesk ID veya alias", text: $address)
+            TextField(Copy.placeholder, text: $address)
                 .textFieldStyle(.roundedBorder)
                 .focused($isAddressFocused)
                 .onSubmit(connect)
@@ -41,14 +41,14 @@ private struct ConnectionView: View {
             }
 
             HStack {
-                Button("Çıkış") {
+                Button(Copy.quit) {
                     NSApplication.shared.terminate(nil)
                 }
                 .keyboardShortcut("q")
 
                 Spacer()
 
-                Button("Bağlan", action: connect)
+                Button(Copy.connect, action: connect)
                     .keyboardShortcut(.return, modifiers: [])
                     .buttonStyle(.borderedProminent)
                     .disabled(address.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -73,7 +73,7 @@ private struct ConnectionView: View {
         }
 
         guard !cleaned.isEmpty else {
-            message = "Bir AnyDesk ID veya alias girin."
+            message = Copy.emptyAddress
             return
         }
 
@@ -81,15 +81,43 @@ private struct ConnectionView: View {
         guard cleaned.unicodeScalars.allSatisfy(allowed.contains),
               let encoded = cleaned.addingPercentEncoding(withAllowedCharacters: allowed),
               let url = URL(string: "anydesk:\(encoded)") else {
-            message = "Geçerli bir AnyDesk ID veya alias girin."
+            message = Copy.invalidAddress
             return
         }
 
         guard NSWorkspace.shared.urlForApplication(toOpen: url) != nil else {
-            message = "AnyDesk bulunamadı. Önce AnyDesk'i yükleyin."
+            message = Copy.anyDeskMissing
             return
         }
 
         NSWorkspace.shared.open(url)
+    }
+}
+
+private enum Copy {
+    private static let language: String = {
+        let preferred = Locale.preferredLanguages.first?.lowercased() ?? "en"
+        if preferred.hasPrefix("tr") { return "tr" }
+        if preferred.hasPrefix("fr") { return "fr" }
+        if preferred.hasPrefix("it") { return "it" }
+        return "en"
+    }()
+
+    static var menuTitle: String { value(tr: "AnyDesk Bağlan", en: "Connect with AnyDesk", fr: "Connexion AnyDesk", it: "Connetti con AnyDesk") }
+    static var heading: String { value(tr: "AnyDesk'e Bağlan", en: "Connect with AnyDesk", fr: "Se connecter avec AnyDesk", it: "Connetti con AnyDesk") }
+    static var placeholder: String { value(tr: "AnyDesk ID veya alias", en: "AnyDesk ID or alias", fr: "ID AnyDesk ou alias", it: "ID AnyDesk o alias") }
+    static var quit: String { value(tr: "Çıkış", en: "Quit", fr: "Quitter", it: "Esci") }
+    static var connect: String { value(tr: "Bağlan", en: "Connect", fr: "Connexion", it: "Connetti") }
+    static var emptyAddress: String { value(tr: "Bir AnyDesk ID veya alias girin.", en: "Enter an AnyDesk ID or alias.", fr: "Saisissez un ID AnyDesk ou un alias.", it: "Inserisci un ID AnyDesk o un alias.") }
+    static var invalidAddress: String { value(tr: "Geçerli bir AnyDesk ID veya alias girin.", en: "Enter a valid AnyDesk ID or alias.", fr: "Saisissez un ID AnyDesk ou un alias valide.", it: "Inserisci un ID AnyDesk o un alias valido.") }
+    static var anyDeskMissing: String { value(tr: "AnyDesk bulunamadı. Önce AnyDesk'i yükleyin.", en: "AnyDesk was not found. Install AnyDesk first.", fr: "AnyDesk est introuvable. Installez d'abord AnyDesk.", it: "AnyDesk non è stato trovato. Installa prima AnyDesk.") }
+
+    private static func value(tr: String, en: String, fr: String, it: String) -> String {
+        switch language {
+        case "tr": tr
+        case "fr": fr
+        case "it": it
+        default: en
+        }
     }
 }
