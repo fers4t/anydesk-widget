@@ -60,6 +60,8 @@ Starting with version 1.3.0, updates are delivered from this repository's GitHub
 
 Before installation, the updater verifies the downloaded archive against the SHA-256 digest published by GitHub, confirms the application bundle identifier and version, and validates the bundle's code signature. If any check fails, the installed application is left untouched.
 
+The updater normally replaces a user-owned application bundle without prompting. If macOS protects the installed bundle, it requests standard administrator approval and performs the replacement with a rollback backup.
+
 ## Usage
 
 1. Select the display icon in the menu bar, or press `⌥⌘A`.

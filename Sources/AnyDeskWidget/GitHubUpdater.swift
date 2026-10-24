@@ -254,20 +254,26 @@ private enum GitHubUpdateService {
         let fileManager = FileManager.default
         let currentURL = Bundle.main.bundleURL
         guard currentURL.pathExtension == "app",
-              Bundle.main.bundleIdentifier == expectedBundleIdentifier,
-              fileManager.isWritableFile(atPath: currentURL.deletingLastPathComponent().path) else {
+              Bundle.main.bundleIdentifier == expectedBundleIdentifier else {
             throw UpdateError.cannotReplaceApplication
         }
 
-        let incomingURL = currentURL.deletingLastPathComponent()
-            .appendingPathComponent(".AnyDeskWidget-update-\(UUID().uuidString).app")
-        do {
-            try fileManager.copyItem(at: update.appURL, to: incomingURL)
-            _ = try fileManager.replaceItemAt(currentURL, withItemAt: incomingURL)
-        } catch {
-            try? fileManager.removeItem(at: incomingURL)
-            throw UpdateError.cannotReplaceApplication
+        let parentURL = currentURL.deletingLastPathComponent()
+        if fileManager.isWritableFile(atPath: parentURL.path) {
+            do {
+                try replaceDirectly(source: update.appURL, destination: currentURL)
+            } catch {
+                try installWithAdministratorPrivileges(source: update.appURL, destination: currentURL)
+            }
+        } else if fileManager.isWritableFile(atPath: currentURL.path) {
+            // Finder commonly gives the user ownership of the app bundle, while
+            // /Applications itself remains protected. Updating in place needs no prompt.
+            try run("/usr/bin/ditto", arguments: [update.appURL.path, currentURL.path], failure: .cannotReplaceApplication)
+        } else {
+            try installWithAdministratorPrivileges(source: update.appURL, destination: currentURL)
         }
+
+        try run("/usr/bin/codesign", arguments: ["--verify", "--deep", "--strict", currentURL.path], failure: .invalidSignature)
 
         let helperURL = fileManager.temporaryDirectory
             .appendingPathComponent("anydesk-widget-relaunch-\(UUID().uuidString).sh")
@@ -280,6 +286,45 @@ private enum GitHubUpdateService {
         process.arguments = [helperURL.path, currentURL.path]
         try process.run()
         NSApplication.shared.terminate(nil)
+    }
+
+    nonisolated private static func replaceDirectly(source: URL, destination: URL) throws {
+        let fileManager = FileManager.default
+        let incomingURL = destination.deletingLastPathComponent()
+            .appendingPathComponent(".AnyDeskWidget-update-\(UUID().uuidString).app")
+        do {
+            try fileManager.copyItem(at: source, to: incomingURL)
+            _ = try fileManager.replaceItemAt(destination, withItemAt: incomingURL)
+        } catch {
+            try? fileManager.removeItem(at: incomingURL)
+            throw error
+        }
+    }
+
+    nonisolated private static func installWithAdministratorPrivileges(source: URL, destination: URL) throws {
+        let parent = destination.deletingLastPathComponent()
+        let token = UUID().uuidString
+        let incoming = parent.appendingPathComponent(".AnyDeskWidget-update-\(token).app")
+        let backup = parent.appendingPathComponent(".AnyDeskWidget-backup-\(token).app")
+
+        let command = [
+            "set -e",
+            "/usr/bin/ditto \(shellQuote(source.path)) \(shellQuote(incoming.path))",
+            "/bin/mv \(shellQuote(destination.path)) \(shellQuote(backup.path))",
+            "if /bin/mv \(shellQuote(incoming.path)) \(shellQuote(destination.path)); then /bin/rm -rf \(shellQuote(backup.path)); else /bin/mv \(shellQuote(backup.path)) \(shellQuote(destination.path)); exit 1; fi"
+        ].joined(separator: "; ")
+        let appleScript = "do shell script \(appleScriptLiteral(command)) with administrator privileges"
+        try run("/usr/bin/osascript", arguments: ["-e", appleScript], failure: .cannotReplaceApplication)
+    }
+
+    nonisolated private static func shellQuote(_ value: String) -> String {
+        "'" + value.replacingOccurrences(of: "'", with: "'\"'\"'") + "'"
+    }
+
+    nonisolated private static func appleScriptLiteral(_ value: String) -> String {
+        "\"" + value
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"") + "\""
     }
 
     nonisolated private static func run(_ executable: String, arguments: [String], failure: UpdateError) throws {
