@@ -69,6 +69,7 @@ enum UpdateState {
 @MainActor
 final class UpdateModel: ObservableObject {
     @Published private(set) var state: UpdateState = .idle
+    @Published private(set) var manualStatus: String?
     var onUpdateReady: (() -> Void)?
     var onStateChange: ((UpdateState) -> Void)?
 
@@ -87,8 +88,16 @@ final class UpdateModel: ObservableObject {
         }
     }
 
-    func checkForUpdates() {
+    var isBusy: Bool {
+        switch state {
+        case .checking, .downloading, .installing: true
+        default: false
+        }
+    }
+
+    func checkForUpdates(manual: Bool = false) {
         guard updateTask == nil, preparedUpdate == nil else { return }
+        if manual { manualStatus = nil }
         setState(.checking)
         let currentVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
 
@@ -96,19 +105,25 @@ final class UpdateModel: ObservableObject {
             do {
                 guard let release = try await GitHubUpdateService.latestUpdate(after: currentVersion) else {
                     self?.setState(.idle)
+                    if manual { self?.manualStatus = Copy.updateUpToDate }
                     self?.updateTask = nil
                     return
                 }
                 self?.setState(.downloading(version: release.version))
+                if manual { self?.manualStatus = String(format: Copy.updateDownloading, release.version) }
                 let prepared = try await GitHubUpdateService.downloadAndPrepare(release)
                 self?.setState(.ready(prepared))
+                if manual { self?.manualStatus = String(format: Copy.updateReadyVersion, prepared.version) }
                 self?.updateTask = nil
                 self?.onUpdateReady?()
             } catch is CancellationError {
                 self?.setState(.idle)
                 self?.updateTask = nil
             } catch {
-                self?.setState(.failed(error.localizedDescription))
+                if manual {
+                    self?.manualStatus = String(format: Copy.updateFailed, error.localizedDescription)
+                }
+                self?.setState(.idle)
                 self?.updateTask = nil
             }
         }

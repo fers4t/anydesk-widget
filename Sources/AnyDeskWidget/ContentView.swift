@@ -7,13 +7,19 @@ struct RootView: View {
     @ObservedObject var shortcutModel: ShortcutSettingsModel
     @ObservedObject var connectionModel: ConnectionModel
     @ObservedObject var updateModel: UpdateModel
+    @ObservedObject var launchAtLoginModel: LaunchAtLoginModel
     @State private var page: Page = .connect
 
     var body: some View {
         Group {
             switch page {
             case .connect: ConnectionView(model: connectionModel, updateModel: updateModel) { page = .settings }
-            case .settings: SettingsView(model: shortcutModel) { page = .connect }
+            case .settings:
+                SettingsView(
+                    model: shortcutModel,
+                    updateModel: updateModel,
+                    launchAtLoginModel: launchAtLoginModel
+                ) { page = .connect }
             }
         }
         .frame(width: 320)
@@ -122,6 +128,8 @@ private struct ConnectionView: View {
 
 private struct SettingsView: View {
     @ObservedObject var model: ShortcutSettingsModel
+    @ObservedObject var updateModel: UpdateModel
+    @ObservedObject var launchAtLoginModel: LaunchAtLoginModel
     let goBack: () -> Void
 
     var body: some View {
@@ -151,6 +159,33 @@ private struct SettingsView: View {
                     set: { model.setAutoOpenFromClipboard($0) }
                 ))
                 Text(Copy.clipboardHint).font(.caption).foregroundStyle(.secondary)
+            }
+
+            Divider()
+
+            VStack(alignment: .leading, spacing: 5) {
+                Toggle(Copy.launchAtLogin, isOn: Binding(
+                    get: { launchAtLoginModel.isEnabled },
+                    set: { launchAtLoginModel.setEnabled($0) }
+                ))
+                if let message = launchAtLoginModel.message {
+                    Text(message).font(.caption).foregroundStyle(.secondary)
+                }
+            }
+
+            Divider()
+
+            HStack {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(Copy.updates).font(.subheadline.weight(.medium))
+                    if let status = updateModel.manualStatus {
+                        Text(status).font(.caption).foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                Spacer()
+                Button(Copy.checkForUpdates) { updateModel.checkForUpdates(manual: true) }
+                    .disabled(updateModel.isBusy || updateModel.preparedUpdate != nil)
             }
 
             HStack {

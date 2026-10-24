@@ -28,6 +28,8 @@ The application is intentionally narrow in scope: it does not replace AnyDesk, m
 - Launch AnyDesk automatically through its registered URL handler
 - Follow the preferred macOS language: English, Turkish, French, or Italian
 - Check GitHub Releases automatically, verify and download updates in the background, then install them on demand
+- Start automatically when the user logs in, with an opt-out in Settings
+- Check for updates manually from Settings
 - Persist shortcut preferences locally between launches
 - Detect unavailable shortcut combinations without discarding the active shortcut
 - Run as a menu bar utility without a Dock presence
@@ -66,7 +68,7 @@ Use the gear button to record a different system-wide shortcut. The shortcut mus
 
 Clipboard detection is enabled by default and can be disabled from the same settings screen. Detection is intentionally strict: only clipboard text consisting entirely of a supported 9–10 digit AnyDesk ID format triggers the widget.
 
-To start the widget after login, add it under **System Settings → General → Login Items**.
+The widget registers itself as a macOS Login Item on first launch. You can disable automatic startup or check for updates manually from the Settings screen.
 
 ## Build from source
 

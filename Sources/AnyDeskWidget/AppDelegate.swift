@@ -8,6 +8,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let shortcutModel = ShortcutSettingsModel()
     private let connectionModel = ConnectionModel()
     private let updateModel = UpdateModel()
+    private let launchAtLoginModel = LaunchAtLoginModel()
     private let clipboardMonitor = ClipboardMonitor()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -22,12 +23,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         popover.behavior = .transient
         popover.animates = true
-        popover.contentSize = NSSize(width: 320, height: 235)
+        popover.contentSize = NSSize(width: 320, height: 350)
         popover.contentViewController = NSHostingController(
             rootView: RootView(
                 shortcutModel: shortcutModel,
                 connectionModel: connectionModel,
-                updateModel: updateModel
+                updateModel: updateModel,
+                launchAtLoginModel: launchAtLoginModel
             )
         )
 
@@ -48,6 +50,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.showPopover()
         }
         updateModel.start()
+        launchAtLoginModel.start()
 
         clipboardMonitor.isEnabled = { [weak self] in
             self?.shortcutModel.autoOpenFromClipboard ?? false

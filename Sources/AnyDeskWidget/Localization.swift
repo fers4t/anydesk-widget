@@ -42,6 +42,12 @@ enum Copy {
     static var updateInvalidApplication: String { value("Güncelleme paketi bu uygulamayla eşleşmiyor.", "The update package does not match this application.", "Le paquet ne correspond pas à cette application.", "Il pacchetto non corrisponde a questa applicazione.") }
     static var updateInvalidSignature: String { value("Güncellemenin kod imzası doğrulanamadı.", "The update's code signature could not be verified.", "La signature du code n’a pas pu être vérifiée.", "Impossibile verificare la firma del codice.") }
     static var updateCannotInstall: String { value("Uygulama değiştirilemedi. Applications klasöründeki yazma iznini kontrol edin.", "The app could not be replaced. Check write access in the Applications folder.", "L’app n’a pas pu être remplacée. Vérifiez l’accès en écriture au dossier Applications.", "Impossibile sostituire l’app. Controlla l’accesso in scrittura alla cartella Applicazioni.") }
+    static var launchAtLogin: String { value("Oturum açıldığında başlat", "Launch at Login", "Ouvrir à la connexion", "Avvia al login") }
+    static var launchAtLoginNeedsApproval: String { value("Sistem Ayarları > Genel > Giriş Öğeleri bölümünden izin verin.", "Allow it in System Settings > General > Login Items.", "Autorisez-le dans Réglages Système > Général > Ouverture.", "Consentilo in Impostazioni di Sistema > Generali > Elementi login.") }
+    static var launchAtLoginFailed: String { value("Otomatik başlatma ayarlanamadı: %@", "Launch at login could not be configured: %@", "Le lancement à la connexion n’a pas pu être configuré : %@", "Impossibile configurare l’avvio al login: %@") }
+    static var updates: String { value("Güncellemeler", "Updates", "Mises à jour", "Aggiornamenti") }
+    static var checkForUpdates: String { value("Güncellemeleri Denetle", "Check for Updates", "Rechercher", "Verifica aggiornamenti") }
+    static var updateUpToDate: String { value("AnyDesk Widget güncel.", "AnyDesk Widget is up to date.", "AnyDesk Widget est à jour.", "AnyDesk Widget è aggiornato.") }
 
     private static func value(_ tr: String, _ en: String, _ fr: String, _ it: String) -> String {
         switch language { case "tr": tr; case "fr": fr; case "it": it; default: en }
