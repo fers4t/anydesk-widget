@@ -22,6 +22,7 @@ The application is intentionally narrow in scope: it does not replace AnyDesk, m
 ## Capabilities
 
 - Start a session with an AnyDesk ID or alias
+- Detect copied 9–10 digit AnyDesk IDs, open the widget, and prefill the connection field
 - Open or dismiss the widget with a configurable global keyboard shortcut
 - Normalize spaces in numeric AnyDesk IDs before connecting
 - Launch AnyDesk automatically through its registered URL handler
@@ -58,6 +59,8 @@ Release artifacts are ad-hoc signed but not notarized with an Apple Developer ce
 
 Use the gear button to record a different system-wide shortcut. The shortcut must include at least one modifier key—Command, Option, Control, or Shift—and is saved immediately.
 
+Clipboard detection is enabled by default and can be disabled from the same settings screen. Detection is intentionally strict: only clipboard text consisting entirely of a supported 9–10 digit AnyDesk ID format triggers the widget.
+
 To start the widget after login, add it under **System Settings → General → Login Items**.
 
 ## Build from source
@@ -91,7 +94,8 @@ AnyDesk Widget:
 - does not store submitted AnyDesk IDs or aliases;
 - does not handle unattended-access passwords;
 - does not require Accessibility or Input Monitoring permission for its global shortcut;
-- stores only the selected shortcut in the application's local `UserDefaults` domain.
+- inspects changed plain-text clipboard values only while clipboard detection is enabled, without retaining their contents;
+- stores only the selected shortcut and clipboard-detection preference in the application's local `UserDefaults` domain.
 
 AnyDesk may require separate macOS permissions for remote-control functionality. Those permissions are managed by the AnyDesk client, not by this utility.
 

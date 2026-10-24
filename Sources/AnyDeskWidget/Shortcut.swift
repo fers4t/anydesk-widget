@@ -27,12 +27,19 @@ struct Shortcut: Codable, Equatable {
 final class ShortcutSettingsModel: ObservableObject {
     @Published private(set) var shortcut: Shortcut
     @Published private(set) var error: String?
+    @Published private(set) var autoOpenFromClipboard: Bool
     var onTrigger: (() -> Void)?
 
     private let manager = GlobalHotKeyManager()
     private let defaultsKey = "globalShortcut"
+    private let clipboardDefaultsKey = "autoOpenFromClipboard"
 
     init() {
+        if UserDefaults.standard.object(forKey: clipboardDefaultsKey) == nil {
+            autoOpenFromClipboard = true
+        } else {
+            autoOpenFromClipboard = UserDefaults.standard.bool(forKey: clipboardDefaultsKey)
+        }
         if let data = UserDefaults.standard.data(forKey: defaultsKey),
            let saved = try? JSONDecoder().decode(Shortcut.self, from: data) {
             shortcut = saved
@@ -59,6 +66,11 @@ final class ShortcutSettingsModel: ObservableObject {
     }
 
     func reset() { update(.defaultShortcut) }
+
+    func setAutoOpenFromClipboard(_ enabled: Bool) {
+        autoOpenFromClipboard = enabled
+        UserDefaults.standard.set(enabled, forKey: clipboardDefaultsKey)
+    }
 
     private func register(_ shortcut: Shortcut) {
         error = manager.register(shortcut) ? nil : Copy.shortcutUnavailable

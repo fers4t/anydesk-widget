@@ -9,6 +9,10 @@ let package = Package(
         .executableTarget(
             name: "AnyDeskWidget",
             path: "Sources/AnyDeskWidget"
+        ),
+        .testTarget(
+            name: "AnyDeskWidgetTests",
+            dependencies: ["AnyDeskWidget"]
         )
     ]
 )

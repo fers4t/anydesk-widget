@@ -5,22 +5,24 @@ private enum Page { case connect, settings }
 
 struct RootView: View {
     @ObservedObject var shortcutModel: ShortcutSettingsModel
+    @ObservedObject var connectionModel: ConnectionModel
     @State private var page: Page = .connect
 
     var body: some View {
         Group {
             switch page {
-            case .connect: ConnectionView { page = .settings }
+            case .connect: ConnectionView(model: connectionModel) { page = .settings }
             case .settings: SettingsView(model: shortcutModel) { page = .connect }
             }
         }
         .frame(width: 320)
+        .onChange(of: connectionModel.focusRequest) { _ in page = .connect }
     }
 }
 
 private struct ConnectionView: View {
+    @ObservedObject var model: ConnectionModel
     let openSettings: () -> Void
-    @State private var address = ""
     @State private var message: String?
     @FocusState private var isAddressFocused: Bool
 
@@ -35,7 +37,7 @@ private struct ConnectionView: View {
                     .help(Copy.settings)
             }
 
-            TextField(Copy.placeholder, text: $address)
+            TextField(Copy.placeholder, text: $model.address)
                 .textFieldStyle(.roundedBorder)
                 .focused($isAddressFocused)
                 .onSubmit(connect)
@@ -52,7 +54,7 @@ private struct ConnectionView: View {
                 Button(Copy.connect, action: connect)
                     .keyboardShortcut(.return, modifiers: [])
                     .buttonStyle(.borderedProminent)
-                    .disabled(address.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .disabled(model.address.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
         }
         .padding(14)
@@ -60,11 +62,15 @@ private struct ConnectionView: View {
             message = nil
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { isAddressFocused = true }
         }
+        .onChange(of: model.focusRequest) { _ in
+            message = nil
+            isAddressFocused = true
+        }
     }
 
     private func connect() {
         message = nil
-        var cleaned = address.trimmingCharacters(in: .whitespacesAndNewlines)
+        var cleaned = model.address.trimmingCharacters(in: .whitespacesAndNewlines)
         if cleaned.allSatisfy({ $0.isNumber || $0.isWhitespace }) {
             cleaned.removeAll(where: \Character.isWhitespace)
         }
@@ -106,6 +112,16 @@ private struct SettingsView: View {
                 if let error = model.error {
                     Text(error).font(.caption).foregroundStyle(.red)
                 }
+            }
+
+            Divider()
+
+            VStack(alignment: .leading, spacing: 5) {
+                Toggle(Copy.clipboardDetection, isOn: Binding(
+                    get: { model.autoOpenFromClipboard },
+                    set: { model.setAutoOpenFromClipboard($0) }
+                ))
+                Text(Copy.clipboardHint).font(.caption).foregroundStyle(.secondary)
             }
 
             HStack {

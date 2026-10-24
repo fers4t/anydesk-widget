@@ -6,6 +6,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     private let popover = NSPopover()
     private let shortcutModel = ShortcutSettingsModel()
+    private let connectionModel = ConnectionModel()
+    private let clipboardMonitor = ClipboardMonitor()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         guard let button = statusItem.button else { return }
@@ -19,16 +21,34 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         popover.behavior = .transient
         popover.animates = true
-        popover.contentSize = NSSize(width: 320, height: 190)
-        popover.contentViewController = NSHostingController(rootView: RootView(shortcutModel: shortcutModel))
+        popover.contentSize = NSSize(width: 320, height: 235)
+        popover.contentViewController = NSHostingController(
+            rootView: RootView(shortcutModel: shortcutModel, connectionModel: connectionModel)
+        )
+
+        clipboardMonitor.isEnabled = { [weak self] in
+            self?.shortcutModel.autoOpenFromClipboard ?? false
+        }
+        clipboardMonitor.onAddressDetected = { [weak self] address in
+            guard let self, self.shortcutModel.autoOpenFromClipboard else { return }
+            self.connectionModel.prepare(address: address)
+            self.showPopover()
+        }
+        clipboardMonitor.start()
     }
 
     @objc private func togglePopover() {
-        guard let button = statusItem.button else { return }
         if popover.isShown {
             popover.performClose(nil)
         } else {
-            NSApplication.shared.activate(ignoringOtherApps: true)
+            showPopover()
+        }
+    }
+
+    private func showPopover() {
+        guard let button = statusItem.button else { return }
+        NSApplication.shared.activate(ignoringOtherApps: true)
+        if !popover.isShown {
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
         }
     }
